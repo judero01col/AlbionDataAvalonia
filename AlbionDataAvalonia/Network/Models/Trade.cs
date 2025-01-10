@@ -98,6 +98,7 @@ public class Trade
                 SalesTaxesPercent = salesTax;
                 break;
         }
+
         Amount = amount;
         AlbionServerId = albionServerId;
         LocationId = order.LocationId;

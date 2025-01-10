@@ -1,4 +1,5 @@
 ﻿using Albion.Network;
+using AlbionDataAvalonia.Migrations;
 using AlbionDataAvalonia.Network.Models;
 using AlbionDataAvalonia.Network.Responses;
 using AlbionDataAvalonia.Network.Services;
@@ -12,11 +13,12 @@ public class AuctionGetRequestsResponseHandler : ResponsePacketHandler<AuctionGe
     private readonly Uploader uploader;
     private readonly PlayerState playerState;
     private readonly TradeService tradeService;
+    
     public AuctionGetRequestsResponseHandler(Uploader uploader, PlayerState playerState, TradeService tradeService) : base((int)OperationCodes.AuctionGetRequests)
     {
         this.uploader = uploader;
         this.playerState = playerState;
-        this.tradeService = tradeService;
+        this.tradeService = tradeService;        
     }
 
     protected override async Task OnActionAsync(AuctionGetRequestsResponse value)

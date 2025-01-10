@@ -3,6 +3,7 @@ using System;
 using AlbionDataAvalonia.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AlbionDataAvalonia.Migrations
 {
     [DbContext(typeof(LocalContext))]
-    partial class LocalContextModelSnapshot : ModelSnapshot
+    [Migration("20250109191252_MarketOrders")]
+    partial class MarketOrders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.5");
@@ -79,7 +82,7 @@ namespace AlbionDataAvalonia.Migrations
 
                     b.HasIndex("AlbionServerId", "LocationId", "AuctionType", "Deleted", "Received");
 
-                    b.ToTable("AlbionMails", (string)null);
+                    b.ToTable("AlbionMails");
                 });
 
             modelBuilder.Entity("AlbionDataAvalonia.Network.Models.MarketOrder", b =>
@@ -88,16 +91,10 @@ namespace AlbionDataAvalonia.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("AlbionServerId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<uint>("Amount")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("AuctionType")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Deleted")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("EnchantmentLevel")
@@ -125,7 +122,7 @@ namespace AlbionDataAvalonia.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MarketOrders", (string)null);
+                    b.ToTable("MarketOrders");
                 });
 
             modelBuilder.Entity("AlbionDataAvalonia.Network.Models.Trade", b =>
@@ -174,7 +171,7 @@ namespace AlbionDataAvalonia.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Trades", (string)null);
+                    b.ToTable("Trades");
                 });
 #pragma warning restore 612, 618
         }

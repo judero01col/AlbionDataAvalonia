@@ -9,6 +9,8 @@ namespace AlbionDataAvalonia.DB
     {
         public DbSet<AlbionMail> AlbionMails { get; set; }
         public DbSet<Trade> Trades { get; set; }
+        public DbSet<MarketOrder> MarketOrders { get; set; }
+        
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

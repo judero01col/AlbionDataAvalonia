@@ -17,9 +17,11 @@ namespace AlbionDataAvalonia.Localization.Services
             try
             {
                 Log.Information("Initializing localization service...");
+
                 using (var httpClient = new HttpClient())
                 {
                     var json = await httpClient.GetStringAsync(JsonUrl);
+
                     if (!string.IsNullOrEmpty(json))
                     {
                         nameMappings = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
@@ -41,6 +43,7 @@ namespace AlbionDataAvalonia.Localization.Services
                 var tier = parts[0].Substring(1); // Get the number after 'T'
 
                 var enchantment = 0;
+
                 if (uniqueName.Contains("@"))
                 {
                     enchantment = int.Parse(uniqueName.Split('@')[1]); // Get the number after '@'

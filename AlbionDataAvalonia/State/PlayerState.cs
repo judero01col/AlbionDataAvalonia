@@ -22,6 +22,8 @@ namespace AlbionDataAvalonia.State
         private bool isInGame = false;
         private bool hasEncryptedData = false;
 
+        private bool uploadToAfmOnly = false;
+
         public MarketHistoryInfo[] MarketHistoryIDLookup { get; init; }
         public ulong CacheSize => 8192;
         private Queue<string> SentDataHashs = new Queue<string>();
@@ -58,8 +60,14 @@ namespace AlbionDataAvalonia.State
             get => location;
             set
             {
+                if (location == value)
+                    return;
+
                 location = value;
-                Log.Information("Player location set to {Location}", Location.FriendlyName);
+                
+                if (location != null)                
+                    Log.Information("Player location set to {Location}", Location.FriendlyName);                
+                
                 InvokePlayerStateChanged();
             }
         }
@@ -68,9 +76,14 @@ namespace AlbionDataAvalonia.State
             get => playerName;
             set
             {
-                if (playerName == value) return;
+                if (playerName == value) 
+                    return;
+
                 playerName = value;
-                Log.Information("Player name set to {PlayerName}", PlayerName);
+
+                if (playerName != null)
+                    Log.Information("Player name set to {PlayerName}", playerName);
+
                 InvokePlayerStateChanged();
             }
         }
@@ -79,28 +92,45 @@ namespace AlbionDataAvalonia.State
             get => albionServer;
             set
             {
-                if (albionServer == value) return;
+                if (albionServer == value) 
+                    return;
+                
                 albionServer = value;
+
                 if (albionServer != null)
-                {
-                    Log.Information("Server set to {Server}", albionServer.Name);
-                }
+                    Log.Information("Server set to {Server}", albionServer.Name);                
+
                 InvokePlayerStateChanged();
             }
         }
+
+        public bool UploadToAfmOnly
+        {
+            get => uploadToAfmOnly;
+            set
+            {
+                if (uploadToAfmOnly == value) return;
+                uploadToAfmOnly = value;
+                InvokePlayerStateChanged();
+            }
+        }
+
         public bool IsInGame
         {
             get
             {
                 var result = (DateTime.UtcNow - LastPacketTime) < TimeSpan.FromSeconds(10);
+
                 if (isInGame != result)
                 {
                     isInGame = result;
                     Log.Verbose("Player is {InGame}", isInGame ? "in game" : "not in game");
+
                     if (!isInGame)
                     {
                         this.hasEncryptedData = false;
                     }
+
                     InvokePlayerStateChanged();
                 }
                 return isInGame;
@@ -112,7 +142,9 @@ namespace AlbionDataAvalonia.State
             get => hasEncryptedData;
             set
             {
-                if (hasEncryptedData == value) return;
+                if (hasEncryptedData == value) 
+                    return;
+                
                 hasEncryptedData = value;
                 InvokePlayerStateChanged();
             }
@@ -120,7 +152,7 @@ namespace AlbionDataAvalonia.State
 
         private void InvokePlayerStateChanged()
         {
-            OnPlayerStateChanged?.Invoke(this, new PlayerStateEventArgs(Location, PlayerName, AlbionServer, IsInGame, HasEncryptedData));
+            OnPlayerStateChanged?.Invoke(this, new PlayerStateEventArgs(Location, PlayerName, AlbionServer, IsInGame, HasEncryptedData, UploadToAfmOnly));
         }
 
         public PlayerState(SettingsManager settingsManager)
@@ -140,7 +172,9 @@ namespace AlbionDataAvalonia.State
         public void MarketUploadHandler(object? sender, MarketUploadEventArgs e)
         {
             ProcessUploadStatus(e.UploadStatus, e.MarketUpload.Identifier);
-            if (e.UploadStatus != UploadStatus.Success) return;
+            
+            if (e.UploadStatus != UploadStatus.Success)
+                return;
 
             int offersCount = e.MarketUpload.Orders.Count(o => o.AuctionType == AuctionType.offer);
             int requestsCount = e.MarketUpload.Orders.Count(o => o.AuctionType == AuctionType.request);
@@ -150,6 +184,7 @@ namespace AlbionDataAvalonia.State
                 UploadedMarketOffersCount += offersCount;
                 OnUploadedMarketOffersCountChanged?.Invoke(UploadedMarketOffersCount);
             }
+
             if (requestsCount > 0)
             {
                 UploadedMarketRequestsCount += requestsCount;
@@ -160,7 +195,9 @@ namespace AlbionDataAvalonia.State
         public void MarketHistoryUploadHandler(object? sender, MarketHistoriesUploadEventArgs e)
         {
             ProcessUploadStatus(e.UploadStatus, e.MarketHistoriesUpload.Identifier);
-            if (e.UploadStatus != UploadStatus.Success) return;
+            
+            if (e.UploadStatus != UploadStatus.Success) 
+                return;
 
             if (!UploadedHistoriesCountDic.ContainsKey(e.MarketHistoriesUpload.Timescale))
             {
@@ -176,7 +213,9 @@ namespace AlbionDataAvalonia.State
         public void GoldPriceUploadHandler(object? sender, GoldPriceUploadEventArgs e)
         {
             ProcessUploadStatus(e.UploadStatus, e.GoldPriceUpload.Identifier);
-            if (e.UploadStatus != UploadStatus.Success) return;
+
+            if (e.UploadStatus != UploadStatus.Success) 
+                return;
 
             int goldHistoriesCount = e.GoldPriceUpload.Prices.Length;
 
@@ -198,7 +237,8 @@ namespace AlbionDataAvalonia.State
                 Log.Warning("Player location is not set. Please change maps.");
                 return false;
             }
-            else return true;
+            else 
+                return true;
         }
 
         public void AddSentDataHash(string hash)
@@ -217,6 +257,7 @@ namespace AlbionDataAvalonia.State
                 {
                     SentDataHashs.Dequeue();
                 }
+
                 SentDataHashs.Enqueue(hash);
             }
             catch (Exception ex)
@@ -239,10 +280,12 @@ namespace AlbionDataAvalonia.State
         public void AddPowSolveTime(long time)
         {
             PowSolveTimes.Enqueue(time);
+
             while (PowSolveTimes.Count > 50)
             {
                 PowSolveTimes.TryDequeue(out _);
             }
+
             InvokePlayerStateChanged();
         }
     }

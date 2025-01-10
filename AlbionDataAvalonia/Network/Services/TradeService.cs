@@ -18,7 +18,7 @@ public class TradeService
     private readonly PlayerState _playerState;
     private readonly SettingsManager _settingsManager;
     private readonly LocalizationService _localizationService;
-    private readonly MailService _mailService;
+    private readonly MailService _mailService;    
     private List<Trade> Trades { get; set; } = new();
 
     private readonly Queue<MarketOrder> marketOrdersCache = new Queue<MarketOrder>();
@@ -31,7 +31,7 @@ public class TradeService
         _playerState = playerState;
         _settingsManager = settingsManager;
         _localizationService = localizationService;
-        _mailService = mailService;
+        _mailService = mailService;        
 
         _mailService.OnMailDataAdded += async (mail) => await HandleOnMailDataAdded(mail);
     }
@@ -133,7 +133,7 @@ public class TradeService
         }
     }
 
-    public void AddMarketOrdersToCache(List<MarketOrder> orders)
+    public async void AddMarketOrdersToCache(List<MarketOrder> orders)
     {
         foreach (var order in orders)
         {
@@ -141,18 +141,22 @@ public class TradeService
             {
                 continue;
             }
+
             if (marketOrdersCache.Count >= 500)
             {
                 marketOrdersCache.Dequeue();
             }
+
             marketOrdersCache.Enqueue(order);
         }
+
         Log.Debug("Added {Count} market orders to cache", orders.Count);
     }
 
     public MarketOrder? GetMarketOrderFromCache(ulong id)
     {
         var result = marketOrdersCache.FirstOrDefault(o => o.Id == id);
+
         if (result != null)
         {
             Log.Verbose("Got market order from cache: {OrderId}", id);
@@ -161,6 +165,23 @@ public class TradeService
         {
             Log.Verbose("Market order not found in cache: {OrderId}", id);
         }
+
+        return result;
+    }
+
+    public List<MarketOrder> GetMarketOrderFromCache() 
+    {
+        var result = marketOrdersCache.ToList();
+
+        if (result != null)
+        {
+            Log.Verbose("Got market order from cache: {Count}", result.Count);
+        }
+        else
+        {
+            Log.Verbose("Market order not found in cache: {Count}", 0);
+        }
+
         return result;
     }
 

@@ -65,33 +65,37 @@ public static class ClientUpdater
             Log.Information($"A new version is available: v.{latestVersion}. Updating from v.{currentVersion}");
 
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Download the new version
-                Log.Information($"Downloading the new version from {downloadUrl}");
-                var data = await httpClient.GetByteArrayAsync(downloadUrl);
-                var filePath = Path.Combine(Path.GetTempPath(), $"AFMDataClientSetup_v_{latestVersion}.exe");
-                await File.WriteAllBytesAsync(filePath, data);
+            #if !DEBUG
 
-                // Start the new version
-                var process = new Process
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = filePath,
-                        Arguments = "/VERYSILENT /SP-",
-                        UseShellExecute = true
-                    }
-                };
-                process.Start();
+                    // Download the new version
+                    Log.Information($"Downloading the new version from {downloadUrl}");
+                    var data = await httpClient.GetByteArrayAsync(downloadUrl);
+                    var filePath = Path.Combine(Path.GetTempPath(), $"AFMDataClientSetup_v_{latestVersion}.exe");
+                    await File.WriteAllBytesAsync(filePath, data);
 
-                // Stop the current application
-                Environment.Exit(0);
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                Log.Warning("There's a new version available, but updating on Linux is not supported yet. Please update manually.");
-            }
+                    // Start the new version
+                    var process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = filePath,
+                            Arguments = "/VERYSILENT /SP-",
+                            UseShellExecute = true
+                        }
+                    };
+                    process.Start();
+
+                    // Stop the current application
+                    Environment.Exit(0);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Log.Warning("There's a new version available, but updating on Linux is not supported yet. Please update manually.");
+                }
+
+            #endif
         }
         catch (Exception ex)
         {

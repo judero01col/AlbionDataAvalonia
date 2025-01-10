@@ -94,6 +94,22 @@ public class UserSettings : INotifyPropertyChanged
         }
     }
 
+
+    private int ordersPerPage = 200;
+    public int OrdersPerPage
+    {
+        get => ordersPerPage;
+        set
+        {
+            if (ordersPerPage != value)
+            {
+                ordersPerPage = value;
+                //OnPropertyChanged(nameof(OrdersPerPage));
+                Log.Information("Orders per page set to {OrdersPerPage}", ordersPerPage);
+            }
+        }
+    }
+
     private int tradesToShow = 2000;
     public int TradesToShow
     {

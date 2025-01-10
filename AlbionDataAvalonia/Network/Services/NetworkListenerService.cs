@@ -26,7 +26,8 @@ namespace AlbionDataAvalonia.Network.Services
         private readonly SettingsManager _settingsManager;
         private readonly MailService _mailService;
         private readonly TradeService _tradeService;
-        private readonly IdleService _idleService;
+        private readonly MarketOrderService _marketOrderService;
+        private readonly IdleService _idleService;        
 
         private bool hasCleanedUpDevices = false;
         private bool hasFinishedStartingDevices = false;
@@ -35,13 +36,13 @@ namespace AlbionDataAvalonia.Network.Services
         private IPhotonReceiver? receiver;
         private CaptureDeviceList? devices;
 
-        public NetworkListenerService(Uploader uploader, PlayerState playerState, SettingsManager settingsManager, MailService mailService, IdleService idleService, TradeService tradeService, AFMUploader afmUploader)
+        public NetworkListenerService(Uploader uploader, PlayerState playerState, SettingsManager settingsManager, MailService mailService, IdleService idleService, TradeService tradeService, AFMUploader afmUploader, MarketOrderService marketOrderService)
         {
             _uploader = uploader;
             _playerState = playerState;
             _settingsManager = settingsManager;
             _mailService = mailService;
-            _idleService = idleService;
+            _idleService = idleService;            
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -51,6 +52,7 @@ namespace AlbionDataAvalonia.Network.Services
             _idleService.OnDetectedIdle += RestartNetworkListener;
             _tradeService = tradeService;
             _afmUploader = afmUploader;
+            _marketOrderService = marketOrderService;
         }
 
         public async Task StartNetworkListeningAsync()
@@ -62,6 +64,7 @@ namespace AlbionDataAvalonia.Network.Services
                     Log.Information("Network listening is already active.");
                     return;
                 }
+
                 isListening = true;
             }
             try
@@ -83,8 +86,9 @@ namespace AlbionDataAvalonia.Network.Services
 
                 //ADD HANDLERS HERE
                 //EVENTS
-                //builder.AddEventHandler(new LeaveEventHandler(_playerState));
+                builder.AddEventHandler(new LeaveEventHandler(_playerState));
                 builder.AddEventHandler(new PlayerCountsEventHandler(_playerState, _afmUploader));
+
                 //RESPONSE
                 builder.AddResponseHandler(new AuctionGetLoadoutOffersResponseHandler(_uploader, _playerState));
                 builder.AddResponseHandler(new AuctionGetOffersResponseHandler(_uploader, _playerState, _tradeService));
@@ -96,6 +100,7 @@ namespace AlbionDataAvalonia.Network.Services
                 builder.AddResponseHandler(new ReadMailResponseHandler(_playerState, _mailService));
                 builder.AddResponseHandler(new AuctionBuyOfferResponseHandler(_playerState, _tradeService));
                 builder.AddResponseHandler(new AuctionSellSpecificItemRequestResponseHandler(_playerState, _tradeService));
+
                 //REQUEST
                 builder.AddRequestHandler(new AuctionGetItemAverageStatsRequestHandler(_playerState));
                 builder.AddRequestHandler(new AuctionBuyOfferRequestHandler(_playerState, _tradeService, _settingsManager));
@@ -122,11 +127,13 @@ namespace AlbionDataAvalonia.Network.Services
                             Log.Debug("Opening network device: {Device}", device.Description);
 
                             device.OnPacketArrival += new PacketArrivalEventHandler(PacketHandler);
+
                             device.Open(new DeviceConfiguration
                             {
                                 Mode = DeviceModes.None,
                                 ReadTimeout = 5000
                             });
+
                             device.Filter = filter;
                             device.StartCapture();
 
@@ -166,6 +173,7 @@ namespace AlbionDataAvalonia.Network.Services
                 _playerState.LastPacketTime = DateTime.UtcNow;
 
                 UdpPacket packet = Packet.ParsePacket(e.GetPacket().LinkLayerType, e.GetPacket().Data).Extract<UdpPacket>();
+
                 if (packet != null)
                 {
                     if (!hasCleanedUpDevices && devices != null)
@@ -203,13 +211,17 @@ namespace AlbionDataAvalonia.Network.Services
                         Log.Verbose("Packet Source IP null or empty, ignoring");
                         return;
                     }
+                    
                     var server = AlbionServers.GetAll().SingleOrDefault(x => srcIp.Contains(x.HostIp));
+                    
                     if (server is not null)
                     {
                         //Log.Verbose("Packet from {server} server from IP {ip}", server.Name, srcIp);
                         _playerState.AlbionServer = server;
                     }
+                    
                     var packetStatus = receiver.ReceivePacket(packet.PayloadData);
+                    
                     if (packetStatus == PacketStatus.Encrypted)
                     {
                         _playerState.HasEncryptedData = true;
@@ -300,6 +312,7 @@ namespace AlbionDataAvalonia.Network.Services
                             Log.Information("System is entering sleep/hibernate mode. Stopping network listening.");
                             StopNetworkListening();
                             break;
+
                         case PowerModes.Resume:
                             Log.Information("System is resuming from sleep/hibernate. Starting network listening.");
                             Task.Run(StartNetworkListeningAsync);

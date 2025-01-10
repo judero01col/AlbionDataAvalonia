@@ -1,4 +1,6 @@
-﻿using AlbionDataAvalonia.Locations;
+﻿using AlbionDataAvalonia.Auth.Models;
+using AlbionDataAvalonia.Auth.Services;
+using AlbionDataAvalonia.Locations;
 using AlbionDataAvalonia.Network.Models;
 using AlbionDataAvalonia.Network.Services;
 using AlbionDataAvalonia.Settings;
@@ -6,6 +8,7 @@ using AlbionDataAvalonia.State;
 using AlbionDataAvalonia.State.Events;
 using AlbionDataAvalonia.Views;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -19,15 +22,18 @@ using System.Threading.Tasks;
 namespace AlbionDataAvalonia.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
-{
+{    
     private readonly PlayerState _playerState;
     private readonly NetworkListenerService _networkListener;
     private readonly SettingsManager _settingsManager;
     private readonly SettingsViewModel _settingsViewModel;
     private readonly LogsViewModel _logsViewModel;
+    private readonly OrderViewModel _orderViewModel;
+    private readonly RadarViewModel _radarViewModel;
     private readonly MailsViewModel _mailsViewModel;
     private readonly TradesViewModel _tradesViewModel;
     private readonly Uploader _uploader;
+    private readonly AuthService _authService;
 
     [ObservableProperty]
     private string appVersion;
@@ -40,6 +46,13 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private string albionServerName;
+
+    [ObservableProperty]
+    private bool uploadToAfmOnly = false;
+    partial void OnUploadToAfmOnlyChanged(bool value)
+    {
+        _playerState.UploadToAfmOnly = value;
+    }
 
     [ObservableProperty]
     private bool showGetInGame = false;
@@ -86,6 +99,12 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private bool greenBlinking = false;
 
+    [ObservableProperty]
+    private FirebaseAuthResponse? firebaseUser = null;
+
+    [ObservableProperty]
+    private bool userLoggedIn = false;
+
     private int oldUploadQueueSize = 0;
     private int oldRunningTasksCount = 0;
 
@@ -93,7 +112,7 @@ public partial class MainViewModel : ViewModelBase
     {
     }
 
-    public MainViewModel(NetworkListenerService networkListener, PlayerState playerState, SettingsManager settingsManager, SettingsViewModel settingsViewModel, LogsViewModel logsViewModel, MailsViewModel mailsViewModel, TradesViewModel tradesViewModel, Uploader uploader)
+    public MainViewModel(NetworkListenerService networkListener, PlayerState playerState, SettingsManager settingsManager, SettingsViewModel settingsViewModel, LogsViewModel logsViewModel, MailsViewModel mailsViewModel, TradesViewModel tradesViewModel, Uploader uploader, AuthService authService, OrderViewModel orderViewModel, RadarViewModel radarViewModel)
     {
         _playerState = playerState;
         _networkListener = networkListener;
@@ -103,6 +122,10 @@ public partial class MainViewModel : ViewModelBase
         _mailsViewModel = mailsViewModel;
         _tradesViewModel = tradesViewModel;
         _uploader = uploader;
+        _authService = authService;
+
+        _orderViewModel = orderViewModel;
+        _radarViewModel = radarViewModel;
 
         LocationName = _playerState.Location.FriendlyName;
         PlayerName = _playerState.PlayerName;
@@ -118,20 +141,26 @@ public partial class MainViewModel : ViewModelBase
         UpdateVisibilities();
 
         _uploader.OnChange += UpdateUploadStats;
-
+        
         _playerState.OnPlayerStateChanged += UpdateState;
-
         _playerState.OnUploadedMarketRequestsCountChanged += count => UploadedMarketRequestsCount = count;
         _playerState.OnUploadedMarketOffersCountChanged += count => UploadedMarketOffersCount = count;
+
         _playerState.OnUploadedHistoriesCountDicChanged += dic =>
         {
             UploadedMonthlyHistoriesCount = dic.ContainsKey(Timescale.Month) ? dic[Timescale.Month] : 0;
             UploadedWeeklyHistoriesCount = dic.ContainsKey(Timescale.Week) ? dic[Timescale.Week] : 0;
             UploadedDailyHistoriesCount = dic.ContainsKey(Timescale.Day) ? dic[Timescale.Day] : 0;
         };
-        _playerState.OnUploadedGoldHistoriesCountChanged += count => UploadedGoldHistoriesCount = count;
 
+        _playerState.OnUploadedGoldHistoriesCountChanged += count => UploadedGoldHistoriesCount = count;
         _playerState.OnUploadStatusCountDicChanged += UpdateUploadStatusCount;
+
+        _authService.FirebaseUserChanged += user =>
+        {
+            FirebaseUser = user;
+            UserLoggedIn = FirebaseUser is not null ? true : false;
+        };
 
         if (NpCapInstallationChecker.IsNpCapInstalled())
         {
@@ -169,9 +198,10 @@ public partial class MainViewModel : ViewModelBase
 
     private void UpdateState(object? sender, PlayerStateEventArgs e)
     {
-        LocationName = e.Location.FriendlyName;
+        LocationName = e.Location?.FriendlyName ?? "Unset";
         PlayerName = e.Name;
         AlbionServerName = e.AlbionServer?.Name ?? "Unknown";
+        UploadToAfmOnly = e.UploadToAfmOnly;
 
         UpdateVisibilities();
     }
@@ -313,6 +343,30 @@ public partial class MainViewModel : ViewModelBase
         {
             Log.Error($"An error occurred while trying to install NpCap: {ex.Message}");
         }
+    }
+
+    [RelayCommand]
+    private async Task Login()
+    {
+        await _authService.SignInAsync();
+    }
+
+    [RelayCommand]
+    private void Logout()
+    {
+        _authService.LogOut();
+    }
+
+    [RelayCommand]
+    private void ShowRadar()
+    {
+        CurrentView = new RadarView(_radarViewModel);
+    }
+
+    [RelayCommand]
+    private void ShowOrder()
+    {
+        CurrentView = new OrderView(_orderViewModel);
     }
 
     public void OpenUrl(object? urlObj)

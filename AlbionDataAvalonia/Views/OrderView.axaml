@@ -1,11 +1,11 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:vm="clr-namespace:AlbionDataAvalonia.ViewModels"
-             x:Class="AlbionDataAvalonia.Views.TradesView"
-			 x:DataType="vm:TradesViewModel"
+             x:Class="AlbionDataAvalonia.Views.OrderView"
+			 x:DataType="vm:OrderViewModel"
 			 xmlns:model="using:AlbionDataAvalonia.Network.Models">
 
 	<UserControl.Styles>
@@ -27,7 +27,7 @@
 
 		<StackPanel Orientation="Horizontal">
 
-			<Button Classes="Filter" Grid.Row="0" Content="Load" Command="{Binding LoadTradesCommand}" />
+			<Button Classes="Filter" Grid.Row="0" Content="Load" Command="{Binding LoadOrdersCommand}" />
 
 			<TextBox Classes="Filter" Text="{Binding FilterText}" Name="FilterBox" Width="250"/>
 
@@ -40,7 +40,7 @@
 				</ComboBox.ItemTemplate>
 			</ComboBox>
 
-			<ComboBox Classes="Filter" ItemsSource="{Binding TradeTypes}" SelectedItem="{Binding SelectedTradeType}" 
+			<ComboBox Classes="Filter" ItemsSource="{Binding TradeTypes}" SelectedItem="{Binding SelectedTradeType}"
 					  Width="100" >
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
@@ -58,18 +58,18 @@
 				</ComboBox.ItemTemplate>
 			</ComboBox>
 
-			<ComboBox Classes="Filter" ItemsSource="{Binding Locations}" SelectedItem="{Binding SelectedLocation}" 
+			<ComboBox Classes="Filter" ItemsSource="{Binding Locations}" SelectedItem="{Binding SelectedLocation}"
 					  Width="150">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<TextBlock Text="{Binding}"/>
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
-			</ComboBox>			
+			</ComboBox>
 
 		</StackPanel>
 
-		<DataGrid Grid.Row="1" Margin="0" ItemsSource="{Binding Trades}"
+		<DataGrid Grid.Row="1" Margin="0" ItemsSource="{Binding Orders}"
 				  AutoGenerateColumns="False" IsReadOnly="True"
 				  GridLinesVisibility="None"
 				  BorderThickness="0" BorderBrush="Gray">
@@ -85,13 +85,12 @@
 
 			<DataGrid.Columns>
 				<DataGridTextColumn Header="Server" Binding="{Binding Server.Name}" />
-				<DataGridTextColumn Header="Player" Binding="{Binding PlayerName}" />
-				<DataGridTextColumn Header="Received" Binding="{Binding DateTime}" />
-				<DataGridTextColumn Header="Type" Binding="{Binding TradeTypeFormatted}" />
-				<DataGridTextColumn Header="Operation" Binding="{Binding TradeOperationFormatted}" />
-				<DataGridTextColumn Header="Quality" Binding="{Binding QualityLevelFormatted}" />
-				<DataGridTextColumn Header="Item" Binding="{Binding ItemName}" />
 				<DataGridTextColumn Header="Location" Binding="{Binding Location.FriendlyName}" />
+				
+				<DataGridTextColumn Header="AuctionType" Binding="{Binding AuctionType}" />
+				<DataGridTextColumn Header="Item" Binding="{Binding ItemTypeId}" />
+				<DataGridTextColumn Header="EnchantmentLevel" Binding="{Binding EnchantmentLevel}" />
+				<DataGridTextColumn Header="QualityLevel" Binding="{Binding QualityLevel}" />				
 
 				<DataGridTemplateColumn Header="Amount" CanUserSort="True" SortMemberPath="Amount">
 					<DataGridTemplateColumn.CellTemplate>
@@ -124,3 +123,4 @@
 
 
 </UserControl>
+

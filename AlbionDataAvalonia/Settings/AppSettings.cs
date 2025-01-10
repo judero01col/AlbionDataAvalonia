@@ -16,4 +16,9 @@ public class AppSettings
     public int NetworkDevicesStartDelaySecs { get; set; }
     public int NetworkDevicesIdleMinutes { get; set; }
     public int NetworkDevicesIdleCheckMinutes { get; set; }
+
+    public string AfmAuthClientId { get; set; }
+    public string AfmAuthRedirectUri { get; set; }
+    public string AfmAuthApiUrl { get; set; }
+    public string AfmTopItemsApiBase { get; set; }
 }

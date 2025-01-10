@@ -1,4 +1,5 @@
-﻿using AlbionDataAvalonia.DB;
+﻿using AlbionDataAvalonia.Auth.Services;
+using AlbionDataAvalonia.DB;
 using AlbionDataAvalonia.Localization.Services;
 using AlbionDataAvalonia.Locations;
 using AlbionDataAvalonia.Logging;
@@ -33,7 +34,6 @@ public partial class App : Application
     public override void Initialize()
     {
         CheckAppAlreadyRunning();
-
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -63,6 +63,7 @@ public partial class App : Application
         //DI SETUP
         var collection = new ServiceCollection();
         collection.AddCommonServices();
+
         var services = collection.BuildServiceProvider();
 
         //LOGGING
@@ -73,6 +74,7 @@ public partial class App : Application
         var settings = services.GetRequiredService<SettingsManager>();
         var listener = services.GetRequiredService<NetworkListenerService>();
         var uploader = services.GetRequiredService<Uploader>();
+        var afmUploader = services.GetRequiredService<AFMUploader>();
         var localization = services.GetRequiredService<LocalizationService>();
         var idleService = services.GetRequiredService<IdleService>();
 
@@ -104,6 +106,9 @@ public partial class App : Application
                 Log.Error(t.Exception, "Error in uploader, exception: {exception}", t.Exception);
             }
         });
+
+        //AFM UPLOADER
+        afmUploader.Initialize();
 
         //LISTENER
         _ = listener.StartNetworkListeningAsync().ContinueWith(t =>
@@ -158,7 +163,6 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
-
     }
 
     private void SetupLogging(ListSink listSink)
@@ -209,12 +213,17 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<AFMUploader>();
         collection.AddSingleton<MailService>();
         collection.AddSingleton<TradeService>();
+        collection.AddSingleton<MarketOrderService>();
         collection.AddSingleton<LocalizationService>();
+        collection.AddSingleton<AuthService>();
 
         collection.AddSingleton<MainViewModel>();
         collection.AddSingleton<SettingsViewModel>();
         collection.AddSingleton<LogsViewModel>();
         collection.AddSingleton<MailsViewModel>();
         collection.AddSingleton<TradesViewModel>();
+        collection.AddSingleton<OrderViewModel>();
+        collection.AddSingleton<RadarViewModel>();
+
     }
 }
