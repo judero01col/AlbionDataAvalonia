@@ -30,6 +30,41 @@ public class MarketOrder
     [NotMapped]
     public AlbionServer? Server { get; set; }
 
+    [NotMapped]
+    public string AuctionTypeFormatted
+    {//AuctionType? type = SelectedType == "Sold" ? AuctionType.offer : SelectedType == "Bought" ? AuctionType.request : null;
+        get
+        {
+            switch (AuctionType)
+            {
+                case AuctionType.offer:
+                    return "Sold";
+                case AuctionType.request:
+                    return "Bought";
+                default:
+                    return "Unknown";
+            }
+        }
+    }
+
+   
+    [NotMapped]
+    public string QualityLevelFormatted
+    {
+        get
+        {
+            return QualityLevel switch
+            {
+                1 => "Normal",
+                2 => "Good",
+                3 => "Outstanding",
+                4 => "Excellent",
+                8 => "Masterpiece",
+                _ => "Unknown"
+            };
+        }
+    }
+
     public void SetData(string mailString)
     {
 

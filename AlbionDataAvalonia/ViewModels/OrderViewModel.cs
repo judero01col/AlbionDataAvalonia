@@ -103,7 +103,7 @@ namespace AlbionDataAvalonia.ViewModels
                 TradeOperation? tradeOperation = SelectedOperation == "Sold" ? TradeOperation.Sell : SelectedOperation == "Bought" ? TradeOperation.Buy : null;
 
                 UnfilteredOrders = await _orderService.GetOrders(_settingsManager.UserSettings.OrdersPerPage, 0, server?.Id ?? null);
-                //UnfilteredTrades = _tradeService.GetMarketOrderFromCache();
+                //UnfilteredOrders = _tradeService.GetMarketOrderFromCache();
 
                 FilterOrders();
             }

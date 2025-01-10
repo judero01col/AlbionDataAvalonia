@@ -87,7 +87,7 @@
 				<DataGridTextColumn Header="Server" Binding="{Binding Server.Name}" />
 				<DataGridTextColumn Header="Location" Binding="{Binding Location.FriendlyName}" />
 				
-				<DataGridTextColumn Header="AuctionType" Binding="{Binding AuctionType}" />
+				<DataGridTextColumn Header="AuctionType" Binding="{Binding AuctionTypeFormatted}" />
 				<DataGridTextColumn Header="Item" Binding="{Binding ItemName}" />
 				<DataGridTextColumn Header="EnchantmentLevel" Binding="{Binding EnchantmentLevel}" />
 				<DataGridTextColumn Header="QualityLevel" Binding="{Binding QualityLevel}" />				

@@ -57,11 +57,11 @@
 				<Label HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="DemiBold" Content="Data Client" Padding="0 5 0 15" />
 				<Button Classes="menu" Content="Main" Margin="10" HorizontalAlignment="Stretch" Command="{Binding ShowDashboardCommand}" />
 				<Button Classes="menu" Content="Trades" Margin="10" HorizontalAlignment="Stretch" Command="{Binding ShowTradesCommand}" />
+				<Button Classes="menu" Content="Order" Margin="10" HorizontalAlignment="Stretch" Command="{Binding ShowOrderCommand}" />
+				<Button Classes="menu" Content="Radar" Margin="10" HorizontalAlignment="Stretch" Command="{Binding ShowRadarCommand}" />
 				<Button Classes="menu" Content="Mails" Margin="10" HorizontalAlignment="Stretch" Command="{Binding ShowMailsCommand}" />
 				<Button Classes="menu" Content="Settings" Margin="10" HorizontalAlignment="Stretch" Command="{Binding ShowSettingsCommand}" />
 				<Button Classes="menu" Content="Logs" Margin="10" HorizontalAlignment="Stretch" Command="{Binding ShowLogsCommand}" />
-				<Button Classes="menu" Content="Order" Margin="10" HorizontalAlignment="Stretch" Command="{Binding ShowOrderCommand}" />
-				<Button Classes="menu" Content="Radar" Margin="10" HorizontalAlignment="Stretch" Command="{Binding ShowRadarCommand}" />
 			</StackPanel>
 
 			<Rectangle Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Width="1" Fill="rgba(255,255,255,.1)" VerticalAlignment="Stretch" />
