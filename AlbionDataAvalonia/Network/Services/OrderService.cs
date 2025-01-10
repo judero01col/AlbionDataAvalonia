@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace AlbionDataAvalonia.Network.Services
 {
-    public class MarketOrderService
+    public class OrderService
     {
         private readonly PlayerState _playerState;
         private readonly SettingsManager _settingsManager;
@@ -25,7 +25,7 @@ namespace AlbionDataAvalonia.Network.Services
         public Action<List<MarketOrder>> OnOrderAdded;
         public Action<MarketOrder> OnOrderDataAdded;
 
-        public MarketOrderService(PlayerState playerState, SettingsManager settingsManager, LocalizationService localizationService)
+        public OrderService(PlayerState playerState, SettingsManager settingsManager, LocalizationService localizationService)
         {
             _playerState = playerState;
             _settingsManager = settingsManager;
@@ -62,7 +62,7 @@ namespace AlbionDataAvalonia.Network.Services
 
                     var result = await query.OrderByDescending(x => x.Expires).AsNoTracking().Skip(countPerPage * pageNumber).Take(countPerPage).ToListAsync();
 
-                    SetOrderProperties(result);
+                    GetOrderProperties(result);
 
                     Log.Debug("Loaded {Count} mails", result.Count);
 
@@ -76,19 +76,28 @@ namespace AlbionDataAvalonia.Network.Services
             }
         }
 
+        private void GetOrderProperties(List<MarketOrder> orders)
+        {
+            foreach (var order in orders)
+            {
+                order.Location = AlbionLocations.Get(order.LocationId);
+                order.Server = AlbionServers.GetAll().SingleOrDefault(x => x.Id == order.AlbionServerId);
+                order.ItemName = _localizationService.GetUsName(order.ItemTypeId);
+            }
+
+            Log.Verbose("Set order properties for {count} orders", orders.Count);
+        }
+
         private void SetOrderProperties(List<MarketOrder> orders)
         {
             foreach (var order in orders)
             {
-                order.Location = _playerState.Location;
-                order.Server = _playerState.AlbionServer;
-
-                if (order.Location != null) order.LocationId = order.Location.Id;
-                if (order.Server != null) order.AlbionServerId = order.Server.Id;
-                //order.ItemName = order.ItemName;
+                order.Location = AlbionLocations.Get(order.LocationId);
+                order.Server = AlbionServers.GetAll().SingleOrDefault(x => x.Id == order.AlbionServerId);
+                order.ItemName = _localizationService.GetUsName(order.ItemTypeId);
             }
 
-            Log.Verbose("Set mail properties for {count} orders", orders.Count);
+            Log.Verbose("Set order properties for {count} orders", orders.Count);
         }
 
         public async Task AddOrders(List<MarketOrder> orders)

@@ -213,7 +213,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<AFMUploader>();
         collection.AddSingleton<MailService>();
         collection.AddSingleton<TradeService>();
-        collection.AddSingleton<MarketOrderService>();
+        collection.AddSingleton<OrderService>();
         collection.AddSingleton<LocalizationService>();
         collection.AddSingleton<AuthService>();
 

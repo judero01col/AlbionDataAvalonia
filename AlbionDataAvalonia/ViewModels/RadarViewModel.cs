@@ -19,7 +19,7 @@ namespace AlbionDataAvalonia.ViewModels
     {
         private readonly ListSink _listSink;
         private readonly SettingsManager _settingsManager;
-        private readonly MarketOrderService _marketOrderService;
+        private readonly OrderService _orderService;
 
         [ObservableProperty]
         private string filterText = string.Empty;
@@ -61,13 +61,13 @@ namespace AlbionDataAvalonia.ViewModels
 
         }
 
-        public RadarViewModel(ListSink listSink, SettingsManager settingsManager, MarketOrderService marketOrderService)
+        public RadarViewModel(ListSink listSink, SettingsManager settingsManager, OrderService orderService)
         {
             _listSink = listSink;
             _settingsManager = settingsManager;
-            _marketOrderService = marketOrderService;
+            _orderService = orderService;
 
-            _marketOrderService.OnOrderAdded += HandleOrderAdded;
+            _orderService.OnOrderAdded += HandleOrderAdded;
             
         }
         [RelayCommand]
@@ -80,7 +80,7 @@ namespace AlbionDataAvalonia.ViewModels
                 TradeType? tradeType = SelectedTradeType == "Instant" ? TradeType.Instant : SelectedTradeType == "Order" ? TradeType.Order : null;
                 TradeOperation? tradeOperation = SelectedOperation == "Sold" ? TradeOperation.Sell : SelectedOperation == "Bought" ? TradeOperation.Buy : null;
 
-                UnfilteredTrades = await _marketOrderService.GetOrders( 0, 0, server?.Id ?? null);
+                UnfilteredTrades = await _orderService.GetOrders( 0, 0, server?.Id ?? null);
                 FilterTrades();
             }
             catch

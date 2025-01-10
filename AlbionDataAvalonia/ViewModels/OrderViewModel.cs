@@ -22,7 +22,7 @@ namespace AlbionDataAvalonia.ViewModels
         private readonly SettingsManager _settingsManager;
         private readonly PlayerState _playerState;
         private readonly TradeService _tradeService;
-        private readonly MarketOrderService _marketOrderService;
+        private readonly OrderService _orderService;
 
         [ObservableProperty]
         private string filterText = string.Empty;
@@ -64,12 +64,12 @@ namespace AlbionDataAvalonia.ViewModels
         {
         }
 
-        public OrderViewModel(SettingsManager settingsManager, PlayerState playerState, TradeService tradeService, MarketOrderService marketOrderService)
+        public OrderViewModel(SettingsManager settingsManager, PlayerState playerState, TradeService tradeService, OrderService orderService)
         {
             _settingsManager = settingsManager;
             _playerState = playerState;
             _tradeService = tradeService;
-            _marketOrderService = marketOrderService;
+            _orderService = orderService;
 
             //_tradeService.OnTradeAdded += HandleTradeAdded;
 
@@ -102,7 +102,7 @@ namespace AlbionDataAvalonia.ViewModels
                 TradeType? tradeType = SelectedTradeType == "Instant" ? TradeType.Instant : SelectedTradeType == "Order" ? TradeType.Order : null;
                 TradeOperation? tradeOperation = SelectedOperation == "Sold" ? TradeOperation.Sell : SelectedOperation == "Bought" ? TradeOperation.Buy : null;
 
-                UnfilteredOrders = await _marketOrderService.GetOrders(_settingsManager.UserSettings.OrdersPerPage, 0, server?.Id ?? null);
+                UnfilteredOrders = await _orderService.GetOrders(_settingsManager.UserSettings.OrdersPerPage, 0, server?.Id ?? null);
                 //UnfilteredTrades = _tradeService.GetMarketOrderFromCache();
 
                 FilterOrders();

@@ -71,12 +71,7 @@ public class TradeService
 
                 var result = await query.OrderByDescending(x => x.DateTime).AsNoTracking().Skip(countPerPage * pageNumber).Take(countPerPage).ToListAsync();
 
-                foreach (var trade in result)
-                {
-                    trade.Server = AlbionServers.Get(trade.AlbionServerId ?? 0);
-                    trade.Location = AlbionLocations.Get(trade.LocationId);
-                    trade.ItemName = _localizationService.GetUsName(trade.ItemId);
-                }
+                SetMailProperties(result);
 
                 Log.Debug("Loaded {Count} trades", result.Count);
 
@@ -88,6 +83,18 @@ public class TradeService
             Log.Error(e, e.Message);
             return new List<Trade>();
         }
+    }
+
+    private void SetMailProperties(List<Trade> trades)
+    {
+        foreach (var trade in trades)
+        {
+            trade.Server = AlbionServers.Get(trade.AlbionServerId ?? 0);
+            trade.Location = AlbionLocations.Get(trade.LocationId);
+            trade.ItemName = _localizationService.GetUsName(trade.ItemId);
+        }
+
+        Log.Verbose("Set trade properties for {count} trades", trades.Count);
     }
 
     private async Task AddTradeToDb(Trade trade)
@@ -204,6 +211,7 @@ public class TradeService
             Log.Warning("No unconfirmed trade to confirm");
             return;
         }
+
         await AddTradeToDb(unconfirmedTrade);
         unconfirmedTrade = null;
         Log.Debug("Confirmed trade");

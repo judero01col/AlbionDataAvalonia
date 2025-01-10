@@ -26,7 +26,7 @@ namespace AlbionDataAvalonia.Network.Services
         private readonly SettingsManager _settingsManager;
         private readonly MailService _mailService;
         private readonly TradeService _tradeService;
-        private readonly MarketOrderService _marketOrderService;
+        private readonly OrderService _orderService;
         private readonly IdleService _idleService;        
 
         private bool hasCleanedUpDevices = false;
@@ -36,7 +36,7 @@ namespace AlbionDataAvalonia.Network.Services
         private IPhotonReceiver? receiver;
         private CaptureDeviceList? devices;
 
-        public NetworkListenerService(Uploader uploader, PlayerState playerState, SettingsManager settingsManager, MailService mailService, IdleService idleService, TradeService tradeService, AFMUploader afmUploader, MarketOrderService marketOrderService)
+        public NetworkListenerService(Uploader uploader, PlayerState playerState, SettingsManager settingsManager, MailService mailService, IdleService idleService, TradeService tradeService, AFMUploader afmUploader, OrderService orderService)
         {
             _uploader = uploader;
             _playerState = playerState;
@@ -52,7 +52,7 @@ namespace AlbionDataAvalonia.Network.Services
             _idleService.OnDetectedIdle += RestartNetworkListener;
             _tradeService = tradeService;
             _afmUploader = afmUploader;
-            _marketOrderService = marketOrderService;
+            _orderService = orderService;
         }
 
         public async Task StartNetworkListeningAsync()

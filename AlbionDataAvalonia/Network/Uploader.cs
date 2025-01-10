@@ -27,7 +27,7 @@ public class Uploader : IDisposable
     private ConnectionService _connectionService;
     private SettingsManager _settingsManager;
     private AFMUploader _afmUploader;
-    private MarketOrderService _marketOrderService;
+    private OrderService _orderService;
 
     public event EventHandler<MarketUploadEventArgs> OnMarketUpload;
     public event EventHandler<GoldPriceUploadEventArgs> OnGoldPriceUpload;
@@ -38,13 +38,13 @@ public class Uploader : IDisposable
     public int uploadQueueCount => uploadQueue.Count;
     public int runningTasksCount => runningTasks.Count;
 
-    public Uploader(PlayerState playerState, ConnectionService connectionService, SettingsManager settingsManager, AFMUploader aFMUploader, MarketOrderService marketOrderService)
+    public Uploader(PlayerState playerState, ConnectionService connectionService, SettingsManager settingsManager, AFMUploader aFMUploader, OrderService orderService)
     {
         _playerState = playerState;
         _connectionService = connectionService;
         _settingsManager = settingsManager;
         _afmUploader = aFMUploader;
-        _marketOrderService = marketOrderService;
+        _orderService = orderService;
 
         OnGoldPriceUpload += _playerState.GoldPriceUploadHandler;
         OnMarketUpload += _playerState.MarketUploadHandler;
@@ -71,7 +71,7 @@ public class Uploader : IDisposable
 
                 if (uploadStatus == UploadStatus.Success)
                 {
-                    await _marketOrderService.AddOrders(marketUpload.Orders);
+                    await _orderService.AddOrders(marketUpload.Orders);
                     Log.Information("Market upload to AFM Flipper complete. {Offers} offers, {Requests} requests.", offers, requests);
                 }
                 else
